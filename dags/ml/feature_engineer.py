@@ -32,16 +32,7 @@ class FeatureEngineer:
             # Fill NaN with median
             df['route_popularity'] = df['route_popularity'].fillna(df['route_popularity'].median())
             df['route_popularity_log'] = np.log1p(df['route_popularity'])
-        
-        # Airline market share (if not from Gold)
-        if 'airline' in df.columns and 'airline_market_share' not in df.columns:
-            airline_counts = df['airline'].value_counts()
-            total_flights = len(df)
-            airline_share = airline_counts / total_flights
-            df['airline_market_share'] = df['airline'].map(airline_share)
-            # Fill NaN with mean
-            df['airline_market_share'] = df['airline_market_share'].fillna(df['airline_market_share'].mean())
-        
+            
         # Peak season indicator (already in data as is_peak_season)
         if 'is_peak_season' in df.columns:
             # Convert boolean to int, fill NaN with 0 (not peak)

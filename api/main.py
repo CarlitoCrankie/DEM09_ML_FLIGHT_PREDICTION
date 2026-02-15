@@ -3,6 +3,9 @@ FastAPI REST API for Flight Fare Prediction
 Serves predictions from trained Random Forest model
 """
 
+import sys
+sys.path.insert(0, '/app/api')
+
 import os
 import json
 import joblib
@@ -53,9 +56,15 @@ class PredictionService:
         model_path = os.getenv('MODEL_PATH', '/app/models/latest')
         
         try:
+            print(f"Loading model from {model_path}...")
             self.model = joblib.load(f'{model_path}/model.pkl')
+            print(f"✅ Model loaded")
+            
             self.feature_engineer = joblib.load(f'{model_path}/feature_engineer.pkl')
+            print(f"✅ Feature engineer loaded")
+            
             self.feature_selector = joblib.load(f'{model_path}/feature_selector.pkl')
+            print(f"✅ Feature selector loaded")
             
             with open(f'{model_path}/metadata.json', 'r') as f:
                 self.metadata = json.load(f)
@@ -66,6 +75,8 @@ class PredictionService:
             
         except Exception as e:
             print(f"❌ Failed to load model: {e}")
+            import traceback
+            traceback.print_exc()
             self.model = None
     
     def predict(self, request: FlightPredictionRequest) -> FlightPredictionResponse:
@@ -102,8 +113,8 @@ class PredictionService:
             # Make prediction
             prediction = self.model.predict(features)[0]
             
-            # Calculate confidence interval (using test RMSE)
-            rmse = self.metadata['metrics']['test_rmse']
+            # Calculate confidence interval
+            rmse = self.metadata['metrics'].get('test_rmse', 50000)
             confidence_interval = {
                 'lower': max(0, prediction - 1.96 * rmse),
                 'upper': prediction + 1.96 * rmse
@@ -118,6 +129,8 @@ class PredictionService:
             )
             
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
     
     def get_status(self) -> ModelStatus:
@@ -158,6 +171,7 @@ app.add_middleware(
 )
 
 # Initialize service
+print("Initializing Prediction Service...")
 prediction_service = PredictionService()
 
 # Routes

@@ -46,8 +46,9 @@ x-airflow-common: &airflow-common
     - ./plugins:/opt/airflow/plugins
     - ./data:/opt/airflow/data
     - ./dbt_project:/opt/airflow/dbt_project
-    - ./models:/opt/airflow/models          # ✅ FIXED INDENTATION
+    - ./models:/opt/airflow/models         
     - ./logs:/opt/airflow/logs
+    - ./scripts:/opt/airflow/scripts
     
   depends_on:
     postgres-airflow:

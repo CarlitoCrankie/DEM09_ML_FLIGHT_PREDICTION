@@ -114,7 +114,7 @@ def retrain_ml_model(**context) -> dict:
         # ====================================
         logger.info("📥 Loading training data...")
         data_loader = MLDataLoader(postgres_conn_id='postgres_analytics')
-        df_raw = data_loader.get_training_data(enrich_with_gold=True)
+        df_raw = data_loader.get_training_data(enrich_with_gold=False)
         logger.info(f"   ✅ Loaded {len(df_raw):,} records")
         logger.info(f"   Columns: {list(df_raw.columns)}")
         
@@ -246,7 +246,7 @@ def retrain_ml_model(**context) -> dict:
         logger.info(f"      R²: {best_model_info['metrics']['test_r2']:.4f}")
         logger.info(f"      MAE: {best_model_info['metrics']['test_mae']:.2f}")
         logger.info(f"      RMSE: {best_model_info['metrics']['test_rmse']:.2f}")
-        logger.info(f"      MAPE: {best_model_info['metrics']['test_mape']:.2f}")
+        logger.info(f"      MAPE: {best_model_info['metrics']['test_mape']:.2f}%")
         
         # ====================================
         # Step 8: Evaluate
@@ -304,7 +304,7 @@ def retrain_ml_model(**context) -> dict:
         logger.info(f"      R²: {best_model_info['metrics']['test_r2']:.4f}")
         logger.info(f"      MAE: {best_model_info['metrics']['test_mae']:.2f}")
         logger.info(f"      RMSE: {best_model_info['metrics']['test_rmse']:.2f}")
-        logger.info(f"      MAPE: {best_model_info['metrics']['test_mape']:.2f}")
+        logger.info(f"      MAPE: {best_model_info['metrics']['test_mape']:.2f}%")
         logger.info(f"   Path: {model_path_latest}")
         logger.info("=" * 70)
         
