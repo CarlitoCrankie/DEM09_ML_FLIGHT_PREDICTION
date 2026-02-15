@@ -1,0 +1,46 @@
+# Logs
+logs/
+*.log
+
+# DBT artifacts (generated files)
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+dbt_project/.user.yml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Kaggle credentials
+.kaggle/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Model files
+models/latest/*
+models/archive/*
+!models/latest/.gitkeep
+!models/archive/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Data files (optional - uncomment if you don't want to track the CSV)
+# data/*.csv

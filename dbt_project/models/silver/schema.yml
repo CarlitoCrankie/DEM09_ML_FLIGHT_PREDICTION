@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: silver_cleaned_flights
+    description: "Cleaned and enriched flight data - only valid records"
+    columns:
+      - name: id
+        description: "Primary key from bronze"
+        tests:
+          - unique
+          - not_null
+      - name: airline
+        description: "Airline name (standardized)"
+        tests:
+          - not_null
+      - name: source_code
+        description: "Source airport IATA code"
+        tests:
+          - not_null
+      - name: destination_code
+        description: "Destination airport IATA code"
+        tests:
+          - not_null
+      - name: total_fare_bdt
+        description: "Total fare in BDT"
+        tests:
+          - not_null
+      - name: travel_class
+        description: "Travel class (standardized where possible)"
+        tests:
+          - not_null
+      - name: seasonality
+        description: "Season (original value from source)"
+        tests:
+          - not_null
+      - name: is_peak_season
+        description: "Whether this is a peak travel season"
+        tests:
+          - not_null
+      - name: season_category
+        description: "Grouped season category"
+        tests:
+          - not_null
+      - name: route_type
+        description: "Domestic or International"
+        tests:
+          - accepted_values:
+              values: ['Domestic', 'International']

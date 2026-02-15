@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements/base.txt requirements/api.txt ./
+RUN pip install --no-cache-dir -r base.txt -r api.txt streamlit plotly
+
+COPY streamlit_app/ ./streamlit_app/
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "streamlit_app/main.py", "--server.address", "0.0.0.0"]

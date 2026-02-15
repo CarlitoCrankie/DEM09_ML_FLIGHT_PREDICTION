@@ -1,0 +1,141 @@
+digraph "Flight Price Analysis Pipeline Architecture (5 Tasks)" {
+    graph [
+        rankdir=LR,
+        bgcolor=white,
+        fontname=Helvetica,
+        fontsize=12,
+        label="Flight Price Analysis Pipeline Architecture - With Kaggle Extraction (5 Tasks)",
+        margin="0.5,0.5",
+        nodesep=1.0,
+        ranksep=1.5,
+        splines=ortho,
+        compound=true
+    ]
+    
+    node [fontname=Helvetica, fontsize=11, shape=box, style=rounded, fillcolor=white, color=black]
+    edge [fontname=Helvetica, fontsize=10, color="#7B8894"]
+    
+    // Docker Environment Cluster
+    subgraph cluster_docker {
+        label="Docker Environment"
+        style=dashed
+        bgcolor="#ECEFF1"
+        penwidth=2
+        margin=20
+        
+        // Data Source Layer - Kaggle
+        subgraph cluster_kaggle {
+            label="Data Source Layer - Kaggle"
+            style=rounded
+            bgcolor="#E3F2FD"
+            margin=15
+            
+            Kaggle [label="Kaggle Dataset\nmahatiratusher/\nflight-price-dataset-of-bangladesh", shape=folder]
+            CSV [label="CSV File\nFlight_Price_Dataset.csv\n\n57,000 records\n18 columns", shape=folder]
+        }
+        
+        // Airflow Orchestration Layer
+        subgraph cluster_airflow {
+            label="Airflow Orchestration Layer (5 Tasks)"
+            style=rounded
+            bgcolor="#FFE0B2"
+            margin=15
+            
+            WebServer [label="Airflow Webserver\n:8080"]
+            Scheduler [label="Airflow Scheduler"]
+            
+            Task0 [label="Task 0: Extract from Kaggle\n~15 seconds\nDownload + Schema Check\nCredential Priority: .env > Airflow Vars > kaggle.json", shape=box, style="filled,rounded", fillcolor="#FFB3BA"]
+            Task1 [label="Task 1: Load CSV to MySQL\n~8 seconds\n57,000 rows\nRename columns, convert types", shape=box]
+            Task2 [label="Task 2: Validate Data\n~10 seconds\n100% pass rate\nHard & soft validation rules", shape=box]
+            Task3 [label="Task 3: Transfer to PostgreSQL\n~12 seconds\n57,000 rows\nExtract valid + type conversion", shape=box]
+            Task4 [label="Task 4: DBT Run + Snapshot\n~4 seconds\n9 models, 22 tests\nSilver + Gold layers", shape=box]
+            
+            Task0 -> Task1 [label="Task dependency", color="#1976D2", style=solid, penwidth=2]
+            Task1 -> Task2 [label="Task dependency", color="#1976D2", style=solid, penwidth=2]
+            Task2 -> Task3 [label="Task dependency", color="#1976D2", style=solid, penwidth=2]
+            Task3 -> Task4 [label="Task dependency", color="#1976D2", style=solid, penwidth=2]
+            
+            Scheduler -> WebServer [label="Task Status", style=dashed, color=gray]
+        }
+        
+        // MySQL Staging Database
+        subgraph cluster_mysql {
+            label="MySQL Staging :3307"
+            style=rounded
+            bgcolor="#E3F2FD"
+            margin=15
+            
+            RawTable [label="raw_flight_data\n\n57,000 rows\nRaw unvalidated data", shape=cylinder]
+            ValTable [label="validated_flight_data\n\n57,000 rows\nis_valid flag", shape=cylinder]
+            
+            RawTable -> ValTable [label="Task 2\nValidate", color="#1976D2", style=solid, penwidth=2]
+        }
+        
+        // PostgreSQL Analytics Database
+        subgraph cluster_postgres {
+            label="PostgreSQL Analytics :5433"
+            style=rounded
+            bgcolor="#E8F5E9"
+            margin=15
+            
+            // Bronze Layer
+            subgraph cluster_bronze {
+                label="Bronze Layer"
+                style=rounded
+                bgcolor="#D7CCC8"
+                margin=10
+                
+                Bronze [label="validated_flights\n\n57,000 rows\nRaw validated data\nNo transformations", shape=cylinder]
+            }
+            
+            // Silver Layer
+            subgraph cluster_silver {
+                label="Silver Layer"
+                style=rounded
+                bgcolor="#CFD8DC"
+                margin=10
+                
+                Silver [label="silver_cleaned_flights\n\n57,000 rows\nStandardized, derived columns", shape=cylinder]
+                Snap1 [label="flight_fare_snapshot\n\n19,052 rows\nSCD Type 2", shape=cylinder]
+                Snap2 [label="route_fare_snapshot\n\n152 rows\nSCD Type 2", shape=cylinder]
+                
+                Silver -> Snap1 [label="SCD Tracking", color="#7B1FA2", style=dashed]
+                Silver -> Snap2 [label="SCD Tracking", color="#7B1FA2", style=dashed]
+            }
+            
+            // Gold Layer
+            subgraph cluster_gold {
+                label="Gold Layer (KPI Tables)"
+                style=rounded
+                bgcolor="#FFF8E1"
+                margin=10
+                
+                Gold1 [label="gold_avg_fare_by_airline\n24 rows", shape=cylinder]
+                Gold2 [label="gold_seasonal_fare_analysis\n4 rows", shape=cylinder]
+                Gold3 [label="gold_booking_count_by_airline\n24 rows", shape=cylinder]
+                Gold4 [label="gold_popular_routes\n152 rows", shape=cylinder]
+                Gold5 [label="gold_fare_by_class\n3 rows", shape=cylinder]
+                Gold6 [label="gold_data_quality_report\n13 rows", shape=cylinder]
+            }
+            
+            // Medallion Architecture Flow
+            Bronze -> Silver [label="DBT Transform\nClean & Standardize", color="#F57C00", style=solid, penwidth=2]
+            Silver -> Gold1 [label="DBT Aggregate\nKPI Creation", color="#FFC107", style=solid, penwidth=2]
+            Silver -> Gold2 [color="#FFC107", style=solid]
+            Silver -> Gold3 [color="#FFC107", style=solid]
+            Silver -> Gold4 [color="#FFC107", style=solid]
+            Silver -> Gold5 [color="#FFC107", style=solid]
+            Silver -> Gold6 [color="#FFC107", style=solid]
+        }
+        
+        // Data Flow Connections
+        Kaggle -> Task0 [label="Task 0: Download\nwith retry (3x)\nFallback to local copy", color="#FF6B6B", style=solid, penwidth=2.5]
+        Task0 -> CSV [label="Extract ZIP\nValidate schema\nTrack metadata", color="#FF6B6B", style=solid, penwidth=2.5]
+        CSV -> Task1 [label="Task 1: Read CSV\nwith Pandas\nColumn mapping", color="#1976D2", style=solid, penwidth=2]
+        Task1 -> RawTable [label="Insert\n57,000 rows\nIn batches (5000)", color="#1976D2", style=solid, penwidth=2]
+        ValTable -> Task3 [label="Task 3: Extract\nvalid records only\nJoin + Filter WHERE is_valid=1", color="#388E3C", style=solid, penwidth=2]
+        Task3 -> Bronze [label="Transfer via SQLAlchemy\nBoolean conversion\nAdd audit columns", color="#388E3C", style=solid, penwidth=2]
+        Task4 -> Bronze [label="Task 4: DBT Source", color="#F57C00", style=solid]
+        Task4 -> Silver [label="Task 4: DBT Run", color="#F57C00", style=solid]
+    }
+}

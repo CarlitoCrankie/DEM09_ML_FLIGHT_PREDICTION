@@ -1,0 +1,50 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: flight_analytics
+    schema: bronze
+    tables:
+      - name: validated_flights
+        description: "Validated flight data transferred from MySQL staging"
+        columns:
+          - name: id
+            description: "Primary key"
+          - name: airline
+            description: "Airline name"
+          - name: source_code
+            description: "Departure airport IATA code"
+          - name: source_name
+            description: "Departure airport full name"
+          - name: destination_code
+            description: "Arrival airport IATA code"
+          - name: destination_name
+            description: "Arrival airport full name"
+          - name: departure_datetime
+            description: "Departure timestamp"
+          - name: arrival_datetime
+            description: "Arrival timestamp"
+          - name: duration_hrs
+            description: "Flight duration in hours"
+          - name: stopovers
+            description: "Number of stops (Direct, 1 Stop, 2 Stops)"
+          - name: aircraft_type
+            description: "Aircraft model"
+          - name: travel_class
+            description: "Travel class (Economy, Business, First)"
+          - name: booking_source
+            description: "Booking method"
+          - name: base_fare_bdt
+            description: "Base fare in BDT"
+          - name: tax_surcharge_bdt
+            description: "Tax and surcharge in BDT"
+          - name: total_fare_bdt
+            description: "Total fare in BDT"
+          - name: seasonality
+            description: "Season (Regular, Eid, Hajj, Winter)"
+          - name: days_before_departure
+            description: "Days between booking and flight"
+          - name: is_valid
+            description: "Validation status"
+          - name: validation_errors
+            description: "Validation error messages if any"

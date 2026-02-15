@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Price Pipeline Architecture - Diagram Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #1976d2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #1565c0;
+        }
+        .help-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flight Price Analysis Pipeline Architecture Diagram</h1>
+        
+        <div class="info-box">
+            <strong>Diagram Status:</strong> DOT file generated ✓<br>
+            <strong>Format:</strong> GraphViz DOT (flight_price_architecture.dot)<br>
+            <strong>Size:</strong> 6,041 bytes
+        </div>
+        
+        <h2>View Diagram Online</h2>
+        <p>Use these online tools to view the architecture diagram:</p>
+        
+        <div class="button-group">
+            <button onclick="openGraphvizOnline()">Open in Graphviz Online</button>
+            <button onclick="downloadDot()">Download DOT File</button>
+        </div>
+        
+        <h2>Instructions</h2>
+        <ol>
+            <li><strong>Quick View:</strong> Click "Open in Graphviz Online" to view the diagram in your browser</li>
+            <li><strong>Generate PNG Locally:</strong> 
+                <pre>dot -Tpng flight_price_architecture.dot -o flight_price_architecture.png</pre>
+            </li>
+            <li><strong>Generate SVG:</strong>
+                <pre>dot -Tsvg flight_price_architecture.dot -o flight_price_architecture.svg</pre>
+            </li>
+        </ol>
+        
+        <h2>Diagram Components</h2>
+        <ul>
+            <li><strong>Data Source:</strong> CSV file with 57,000 flight records</li>
+            <li><strong>Orchestration:</strong> Apache Airflow with 4 sequential DAG tasks</li>
+            <li><strong>Staging:</strong> MySQL with raw and validated data tables</li>
+            <li><strong>Analytics:</strong> PostgreSQL with medallion architecture (Bronze/Silver/Gold)</li>
+            <li><strong>Transformations:</strong> DBT with 9 models and 2 SCD Type 2 snapshots</li>
+        </ul>
+        
+        <h2>Architecture Layers</h2>
+        <ul>
+            <li><strong>Bronze Layer:</strong> 57,000 validated flight records</li>
+            <li><strong>Silver Layer:</strong> Cleaned and standardized data with derived columns</li>
+            <li><strong>Gold Layer:</strong> 6 KPI tables for business analysis</li>
+        </ul>
+        
+        <h2>Pipeline Tasks</h2>
+        <ol>
+            <li><strong>Task 1 (Load CSV):</strong> Read 57,000 records and load to MySQL (~8s)</li>
+            <li><strong>Task 2 (Validate):</strong> Validate data and set quality flags (~10s)</li>
+            <li><strong>Task 3 (Transfer):</strong> Move valid records to PostgreSQL (~12s)</li>
+            <li><strong>Task 4 (DBT Run):</strong> Execute transformations and snapshots (~4s)</li>
+        </ol>
+        
+        <p class="help-text">
+            <strong>Note:</strong> PNG conversion requires GraphViz to be installed on your system. 
+            If PNG generation fails, use the online viewer above or install GraphViz from https://graphviz.org/
+        </p>
+    </div>
+    
+    <script>
+        function openGraphvizOnline() {
+            // Read the DOT file content and open in Graphviz online
+            fetch('flight_price_architecture.dot')
+                .then(response => response.text())
+                .then(data => {
+                    // Encode the DOT content for use in URL
+                    const encoded = btoa(data);
+                    const url = 'https://dreampuf.github.io/GraphvizOnline/#' + encoded;
+                    window.open(url, '_blank');
+                })
+                .catch(err => alert('Error reading DOT file: ' + err));
+        }
+        
+        function downloadDot() {
+            window.location.href = 'flight_price_architecture.dot';
+        }
+    </script>
+</body>
+</html>

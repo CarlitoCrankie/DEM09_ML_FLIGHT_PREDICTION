@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: gold_avg_fare_by_airline
+    description: "Average fare metrics aggregated by airline"
+    columns:
+      - name: airline
+        tests:
+          - unique
+          - not_null
+      - name: total_bookings
+        tests:
+          - not_null
+
+  - name: gold_seasonal_fare_analysis
+    description: "Fare comparison across seasons"
+    columns:
+      - name: seasonality
+        tests:
+          - unique
+          - not_null
+
+  - name: gold_booking_count_by_airline
+    description: "Booking volume by airline"
+    columns:
+      - name: airline
+        tests:
+          - unique
+          - not_null
+
+  - name: gold_popular_routes
+    description: "Top routes by booking count"
+    columns:
+      - name: route
+        tests:
+          - unique
+          - not_null
+
+  - name: gold_fare_by_class
+    description: "Fare analysis by travel class"
+    columns:
+      - name: travel_class
+        tests:
+          - unique
+          - not_null
+

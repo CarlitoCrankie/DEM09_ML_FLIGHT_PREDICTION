@@ -1,0 +1,113 @@
+digraph "Flight Price Analysis Pipeline Architecture" {
+	graph [bgcolor=white fontcolor="#2D3436" fontname=Helvetica fontsize=12 label="Flight Price Analysis Pipeline Architecture" nodesep=1.0 pad=0.5 rankdir=LR ranksep=1.5 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"2e0fc50808514d87ac63e1ef0c09ea9a" -> c0327025c84040228a740bdcb76c3abb [label="Task dependency" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	c0327025c84040228a740bdcb76c3abb -> b3f23e4f67d9482aa66e612310569448 [label="Task dependency" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	b3f23e4f67d9482aa66e612310569448 -> "6e88a873668d4c37940fb35a93b2f26e" [label="Task dependency" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	d29c76bf523b4d1a91db0e5a9e8f5b90 -> bbf5ad718fbc4bfab8a9345539535a49 [label="Task Status" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"81b3fc0179b84d9aaada74f56494a747" -> f8ab574857054957a18e6b989df655cc [label="Task 2
+Validate" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> "804447c1117746d3b1f0aa29b7040d6a" [label="SCD Tracking" color="#7B1FA2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"645ff41f98324955994f0f71b2320711" -> "89dbeed4a393416fba171905ca2b1ed8" [label="SCD Tracking" color="#7B1FA2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"91ce380e043141089131133e54c605fb" -> "645ff41f98324955994f0f71b2320711" [label="DBT Transform
+Clean & Standardize" color="#F57C00" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> f2f41fd852124069b736ea77729d9293 [label="DBT Aggregate
+KPI Creation" color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> "2539ebf7dd34429fb4f1b943b16ef3ce" [color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> "60f196ee9a8744c699d1def033efcacf" [color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> "397305ede18a4e4689dbcf27fcbbad06" [color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> f8107c90cf454288af3c5b0c7bcae785 [color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"645ff41f98324955994f0f71b2320711" -> "9aa2b8765b374fe2bf60321d63c9ae56" [color="#FFC107" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	f928bfd4bb674eee910330a421a9aec4 -> "2e0fc50808514d87ac63e1ef0c09ea9a" [label="Task 1: Read CSV
+with Pandas" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	"2e0fc50808514d87ac63e1ef0c09ea9a" -> "81b3fc0179b84d9aaada74f56494a747" [label="Insert
+57,000 rows" color="#1976D2" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	f8ab574857054957a18e6b989df655cc -> b3f23e4f67d9482aa66e612310569448 [label="Task 3: Extract
+valid records only" color="#388E3C" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	b3f23e4f67d9482aa66e612310569448 -> "91ce380e043141089131133e54c605fb" [label="Transfer via JDBC
+Boolean conversion" color="#388E3C" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 penwidth=2 style=solid]
+	"6e88a873668d4c37940fb35a93b2f26e" -> "91ce380e043141089131133e54c605fb" [label="Task 4: DBT Source" color="#F57C00" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	"6e88a873668d4c37940fb35a93b2f26e" -> "645ff41f98324955994f0f71b2320711" [label="Task 4: DBT Run" color="#F57C00" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=solid]
+	subgraph "cluster_Docker Environment" {
+		graph [bgcolor="#ECEFF1" fontname="Sans-Serif" fontsize=12 label="Docker Environment" labeljust=l pencolor="#AEB6BE" penwidth=2 rankdir=LR shape=box style=dashed]
+		subgraph "cluster_Data Source Layer" {
+			graph [bgcolor="#E3F2FD" fontname="Sans-Serif" fontsize=12 label="Data Source Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			f928bfd4bb674eee910330a421a9aec4 [label="CSV Source
+Flight_Price_Dataset.csv
+
+57,000 records
+18 columns" height=3.5 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/storage\storage.png" shape=none]
+		}
+		subgraph "cluster_Airflow Orchestration Layer" {
+			graph [bgcolor="#FFE0B2" fontname="Sans-Serif" fontsize=12 label="Airflow Orchestration Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			bbf5ad718fbc4bfab8a9345539535a49 [label="Airflow Webserver
+:8080" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/workflow\airflow.png" shape=none]
+			d29c76bf523b4d1a91db0e5a9e8f5b90 [label="Airflow Scheduler" height=1.9 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/workflow\airflow.png" shape=none]
+			"2e0fc50808514d87ac63e1ef0c09ea9a" [label="Task 1: Load CSV
+~8 seconds
+57,000 rows" height=2.7 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			c0327025c84040228a740bdcb76c3abb [label="Task 2: Validate Data
+~10 seconds
+100% pass rate" height=2.7 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			b3f23e4f67d9482aa66e612310569448 [label="Task 3: Transfer to PostgreSQL
+~12 seconds
+57,000 rows" height=2.7 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			"6e88a873668d4c37940fb35a93b2f26e" [label="Task 4: DBT Run + Snapshot
+~4 seconds
+9 models" height=2.7 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+		}
+		subgraph "cluster_MySQL Staging :3307" {
+			graph [bgcolor="#E3F2FD" fontname="Sans-Serif" fontsize=12 label="MySQL Staging :3307" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"81b3fc0179b84d9aaada74f56494a747" [label="raw_flight_data
+
+57,000 rows
+Raw unvalidated data" height=3.1 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+			f8ab574857054957a18e6b989df655cc [label="validated_flight_data
+
+57,000 rows
+is_valid flag" height=3.1 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+		}
+		subgraph "cluster_PostgreSQL Analytics :5433" {
+			graph [bgcolor="#E8F5E9" fontname="Sans-Serif" fontsize=12 label="PostgreSQL Analytics :5433" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			subgraph "cluster_Bronze Layer" {
+				graph [bgcolor="#D7CCC8" fontname="Sans-Serif" fontsize=12 label="Bronze Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+				"91ce380e043141089131133e54c605fb" [label="validated_flights
+
+57,000 rows
+Raw validated data
+No transformations" height=3.5 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+			}
+			subgraph "cluster_Silver Layer" {
+				graph [bgcolor="#CFD8DC" fontname="Sans-Serif" fontsize=12 label="Silver Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+				"645ff41f98324955994f0f71b2320711" [label="silver_cleaned_flights
+
+57,000 rows
+Standardized, derived columns" height=3.1 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"804447c1117746d3b1f0aa29b7040d6a" [label="flight_fare_snapshot
+
+19,052 rows
+SCD Type 2" height=3.1 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"89dbeed4a393416fba171905ca2b1ed8" [label="route_fare_snapshot
+
+152 rows
+SCD Type 2" height=3.1 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+			}
+			subgraph "cluster_Gold Layer (KPI Tables)" {
+				graph [bgcolor="#FFF8E1" fontname="Sans-Serif" fontsize=12 label="Gold Layer (KPI Tables)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+				f2f41fd852124069b736ea77729d9293 [label="gold_avg_fare_by_airline
+24 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"2539ebf7dd34429fb4f1b943b16ef3ce" [label="gold_seasonal_fare_analysis
+4 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"60f196ee9a8744c699d1def033efcacf" [label="gold_booking_count_by_airline
+24 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"397305ede18a4e4689dbcf27fcbbad06" [label="gold_popular_routes
+152 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				f8107c90cf454288af3c5b0c7bcae785 [label="gold_fare_by_class
+3 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+				"9aa2b8765b374fe2bf60321d63c9ae56" [label="gold_data_quality_report
+13 rows" height=2.3 image="C:\Users\CarlNyameakyereCrank\Downloads\DEM06 Lab\.venv\Lib\site-packages\resources/generic/database\sql.png" shape=none]
+			}
+		}
+	}
+}

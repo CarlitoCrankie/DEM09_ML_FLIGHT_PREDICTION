@@ -1,0 +1,28 @@
+# Flight Price Analysis Pipeline Architecture Diagram Generation Requirements
+# Install with: pip install -r requirements.txt
+
+# IMPORTANT: GraphViz must be installed on the system first
+# Download from: https://graphviz.org/download/
+# Windows: Install to C:\Program Files\Graphviz
+# Linux: sudo apt-get install graphviz
+# Mac: brew install graphviz
+
+# Core diagram generation library
+diagrams==0.24.4
+
+# Graph visualization engine (Python wrapper)
+graphviz==0.20.3
+
+# Convert GraphViz DOT files to Draw.io format
+graphviz2drawio==1.1.0
+
+# Additional dependencies (installed automatically with above packages)
+# Listed here for reference - no need to uncomment
+# puremagic>=1.30
+# svg.path>=7.0
+# Jinja2>=3.1.6
+# MarkupSafe>=3.0.3
+
+# Optional: For enhanced diagram styling
+# Pillow>=10.0.0  # Image processing
+# matplotlib>=3.7.0  # Additional plotting capabilities
