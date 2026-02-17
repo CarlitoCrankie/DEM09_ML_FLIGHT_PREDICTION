@@ -15,7 +15,7 @@ class ModelLogger:
     
     def log_training_event(self, metadata):
         """Log model training to database"""
-        logger.info("📝 Logging training event to database...")
+        logger.info(" Logging training event to database...")
         
         try:
             insert_query = """

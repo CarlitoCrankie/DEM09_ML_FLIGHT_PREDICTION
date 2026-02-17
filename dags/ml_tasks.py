@@ -18,7 +18,7 @@ sys.path.append(os.path.dirname(__file__))
 from ml.data_loader import MLDataLoader
 from ml.feature_engineer import FeatureEngineer
 from ml.feature_selector import SmartFeatureSelector
-from ml.model_trainer import MLTrainingPipeline
+from ml.model_trainer import ModelTrainer  
 from ml.model_evaluator import ModelEvaluator
 from ml.model_logger import ModelLogger
 
@@ -103,7 +103,7 @@ def retrain_ml_model(**context) -> dict:
     
     try:
         logger.info("=" * 70)
-        logger.info("🤖 STARTING ML MODEL RETRAINING")
+        logger.info(" STARTING ML MODEL RETRAINING")
         logger.info("=" * 70)
         
         os.makedirs(f"{MODEL_DIR}/latest", exist_ok=True)
@@ -238,13 +238,23 @@ def retrain_ml_model(**context) -> dict:
         # Step 7: Train models
         # ====================================
         logger.info("🎯 Training models...")
-        trainer = MLTrainingPipeline()
-        models = trainer.train_baseline_models(X_train, y_train, X_test, y_test)
-        best_model_info = trainer.get_best_model_info()
-        
+        trainer = ModelTrainer()
+        result = trainer.train_all(X_train, y_train, X_test, y_test)
+
+        best_model_info = {
+            'name':    result['best_model_name'],
+            'model':   result['best_model'],
+            'metrics': result['metrics']
+        }
+
+        # Log all model results
+        logger.info("📊 All model results:")
+        for model_name, metrics in result['all_results'].items():
+            logger.info(f"   {model_name}: R²={metrics['test_r2']:.4f}, MAE={metrics['test_mae']:,.2f}")
+
         logger.info(f"   ✅ Best model: {best_model_info['name']}")
-        logger.info(f"      R²: {best_model_info['metrics']['test_r2']:.4f}")
-        logger.info(f"      MAE: {best_model_info['metrics']['test_mae']:.2f}")
+        logger.info(f"      R²:   {best_model_info['metrics']['test_r2']:.4f}")
+        logger.info(f"      MAE:  {best_model_info['metrics']['test_mae']:.2f}")
         logger.info(f"      RMSE: {best_model_info['metrics']['test_rmse']:.2f}")
         logger.info(f"      MAPE: {best_model_info['metrics']['test_mape']:.2f}%")
         
@@ -252,8 +262,10 @@ def retrain_ml_model(**context) -> dict:
         # Step 8: Evaluate
         # ====================================
         # Log all metrics
+        evaluator = ModelEvaluator()
+        result = evaluator.evaluate_model(best_model_info['model'], X_test, y_test, best_model_info['name'])
         logger.info("📈 Model evaluation metrics:")
-        for metric_name, metric_value in best_model_info['metrics'].items():
+        for metric_name, metric_value in result.items():
             logger.info(f"   {metric_name}: {metric_value:.4f}")
         
         # ====================================
