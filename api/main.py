@@ -58,23 +58,23 @@ class PredictionService:
         try:
             print(f"Loading model from {model_path}...")
             self.model = joblib.load(f'{model_path}/model.pkl')
-            print(f"✅ Model loaded")
+            print(f"Model loaded")
             
             self.feature_engineer = joblib.load(f'{model_path}/feature_engineer.pkl')
-            print(f"✅ Feature engineer loaded")
+            print(f"Feature engineer loaded")
             
             self.feature_selector = joblib.load(f'{model_path}/feature_selector.pkl')
-            print(f"✅ Feature selector loaded")
+            print(f"Feature selector loaded")
             
             with open(f'{model_path}/metadata.json', 'r') as f:
                 self.metadata = json.load(f)
             
-            print(f"✅ Model loaded: {self.metadata['model_name']}")
+            print(f"Model loaded: {self.metadata['model_name']}")
             print(f"   R²: {self.metadata['metrics']['test_r2']:.4f}")
             print(f"   MAE: {self.metadata['metrics']['test_mae']:.2f}")
             
         except Exception as e:
-            print(f"❌ Failed to load model: {e}")
+            print(f"Failed to load model: {e}")
             import traceback
             traceback.print_exc()
             self.model = None
