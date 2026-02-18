@@ -20,10 +20,10 @@ class MLDataLoader:
         """Create database connection"""
         try:
             self.engine = self.postgres_hook.get_sqlalchemy_engine()
-            logger.info("✅ Database connection established")
+            logger.info(" Database connection established")
             return True
         except Exception as e:
-            logger.error(f"❌ Database connection failed: {e}")
+            logger.error(f" Database connection failed: {e}")
             return False
     
     def get_available_tables(self):
@@ -44,12 +44,12 @@ class MLDataLoader:
             """
             
             tables_df = pd.read_sql(query, self.engine)
-            logger.info("📋 Available tables in pipeline:")
+            logger.info(" Available tables in pipeline:")
             logger.info(f"\n{tables_df.to_string(index=False)}")
             return tables_df
             
         except Exception as e:
-            logger.error(f"❌ Failed to get table info: {e}")
+            logger.error(f" Database query failed: {e}")
             return None
     
     def load_silver_data(self, limit=None):
@@ -57,7 +57,7 @@ class MLDataLoader:
         Load cleaned data from Silver layer
         Matches actual schema: source_code, destination_code, total_fare_bdt
         """
-        logger.info("📊 Loading data from Silver layer...")
+        logger.info(" Loading data from Silver layer...")
         
         query = """
         SELECT 
@@ -82,7 +82,7 @@ class MLDataLoader:
         # Create route column from source_code and destination_code
         df['route'] = df['source_code'] + '_to_' + df['destination_code']
         
-        logger.info(f"✅ Loaded {len(df):,} records from Silver layer")
+        logger.info(f" Loaded {len(df):,} records from Silver layer")
         logger.info(f"   Columns: {list(df.columns)}")
         
         return df
@@ -97,43 +97,43 @@ class MLDataLoader:
             # Airline statistics
             query = "SELECT * FROM gold.gold_avg_fare_by_airline"
             gold_features['airline_stats'] = self.postgres_hook.get_pandas_df(query)
-            logger.info(f"   ✅ Airline stats: {len(gold_features['airline_stats'])} airlines")
+            logger.info(f"    Airline stats: {len(gold_features['airline_stats'])} airlines")
         except Exception as e:
-            logger.warning(f"   ⚠️ Could not load airline stats: {e}")
+            logger.warning(f"    Could not load airline stats: {e}")
             gold_features['airline_stats'] = pd.DataFrame()
         
         try:
             # Route statistics
             query = "SELECT * FROM gold.gold_popular_routes"
             gold_features['route_stats'] = self.postgres_hook.get_pandas_df(query)
-            logger.info(f"   ✅ Route stats: {len(gold_features['route_stats'])} routes")
+            logger.info(f"    Route stats: {len(gold_features['route_stats'])} routes")
         except Exception as e:
-            logger.warning(f"   ⚠️ Could not load route stats: {e}")
+            logger.warning(f"    Could not load route stats: {e}")
             gold_features['route_stats'] = pd.DataFrame()
         
         try:
             # Seasonal statistics
             query = "SELECT * FROM gold.gold_seasonal_fare_analysis"
             gold_features['seasonal_stats'] = self.postgres_hook.get_pandas_df(query)
-            logger.info(f"   ✅ Seasonal stats: {len(gold_features['seasonal_stats'])} seasons")
+            logger.info(f"    Seasonal stats: {len(gold_features['seasonal_stats'])} seasons")
         except Exception as e:
-            logger.warning(f"   ⚠️ Could not load seasonal stats: {e}")
+            logger.warning(f"    Could not load seasonal stats: {e}")
             gold_features['seasonal_stats'] = pd.DataFrame()
         
         try:
             # Travel class statistics
             query = "SELECT * FROM gold.gold_fare_by_class"
             gold_features['class_stats'] = self.postgres_hook.get_pandas_df(query)
-            logger.info(f"   ✅ Class stats: {len(gold_features['class_stats'])} classes")
+            logger.info(f"    Class stats: {len(gold_features['class_stats'])} classes")
         except Exception as e:
-            logger.warning(f"   ⚠️ Could not load class stats: {e}")
+            logger.warning(f"    Could not load class stats: {e}")
             gold_features['class_stats'] = pd.DataFrame()
         
         return gold_features
     
     def enrich_with_gold_features(self, df_silver, gold_features):
         """Enrich Silver data with Gold layer aggregations"""
-        logger.info("🔧 Enriching Silver data with Gold features...")
+        logger.info(" Enriching Silver data with Gold features...")
         
         df_enriched = df_silver.copy()
         
@@ -149,7 +149,7 @@ class MLDataLoader:
                 how='left',
                 suffixes=('', '_airline')
             )
-            logger.info("   ✅ Added airline features")
+            logger.info("    Added airline features")
         
         # Merge route features
         if 'route_stats' in gold_features and not gold_features['route_stats'].empty:
@@ -162,7 +162,7 @@ class MLDataLoader:
                 how='left',
                 suffixes=('', '_route')
             )
-            logger.info("   ✅ Added route features")
+            logger.info("    Added route features")
         
         # Merge seasonal features
         if 'seasonal_stats' in gold_features and not gold_features['seasonal_stats'].empty:
@@ -175,7 +175,7 @@ class MLDataLoader:
                 how='left',
                 suffixes=('', '_seasonal')
             )
-            logger.info("   ✅ Added seasonal features")
+            logger.info("    Added seasonal features")
         
         # Merge class features
         if 'class_stats' in gold_features and not gold_features['class_stats'].empty:
@@ -188,9 +188,9 @@ class MLDataLoader:
                 how='left',
                 suffixes=('', '_class')
             )
-            logger.info("   ✅ Added class features")
+            logger.info("    Added class features")
         
-        logger.info(f"✅ Enrichment complete: {df_silver.shape[1]} → {df_enriched.shape[1]} columns")
+        logger.info(f" Enrichment complete: {df_silver.shape[1]} → {df_enriched.shape[1]} columns")
         
         return df_enriched
     
@@ -205,7 +205,7 @@ class MLDataLoader:
         Returns:
             dict: Change information
         """
-        logger.info(f"🔍 Checking for data changes in {layer.upper()} layer...")
+        logger.info(f" Checking for data changes in {layer.upper()} layer...")
         
         table_map = {
             'bronze': 'bronze.validated_flights',
@@ -251,14 +251,14 @@ class MLDataLoader:
                 'change_percentage': change_percentage
             }
             
-            logger.info(f"📊 Change Detection ({layer.upper()}):")
+            logger.info(f"   Change Detection ({layer.upper()}):")
             logger.info(f"   Total records: {total_records:,}")
             logger.info(f"   Has data: {change_info['has_changes']}")
             
             return change_info
             
         except Exception as e:
-            logger.error(f"❌ Failed to check changes: {e}")
+            logger.error(f"Failed to check changes: {e}")
             return None
     
     def get_load_statistics(self, days=7):
@@ -271,7 +271,7 @@ class MLDataLoader:
         Returns:
             pd.DataFrame: Load statistics
         """
-        logger.info(f"📊 Getting load statistics for last {days} days...")
+        logger.info(f"Getting load statistics for last {days} days...")
         
         try:
             query = f"""
@@ -291,14 +291,14 @@ class MLDataLoader:
             stats = self.postgres_hook.get_pandas_df(query)
             
             if not stats.empty:
-                logger.info(f"✅ Found {len(stats)} load events in last {days} days")
+                logger.info(f"Found {len(stats)} load events in last {days} days")
             else:
-                logger.info(f"ℹ️ No load events found in last {days} days")
+                logger.info(f"No load events found in last {days} days")
             
             return stats
             
         except Exception as e:
-            logger.warning(f"⚠️ Could not get load statistics: {e}")
+            logger.warning(f"Could not get load statistics: {e}")
             return pd.DataFrame()
     
     def get_training_data(self, enrich_with_gold=True, limit=None):

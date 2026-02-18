@@ -21,7 +21,7 @@ class FeatureEngineer:
     
     def create_derived_features(self, df):
         """Create derived business features"""
-        logger.info("🔧 Creating derived features...")
+        logger.info(" Creating derived features...")
         
         df = df.copy()
         
@@ -38,7 +38,7 @@ class FeatureEngineer:
             # Convert boolean to int, fill NaN with 0 (not peak)
             df['is_peak_season_numeric'] = df['is_peak_season'].fillna(False).astype(int)
         
-        logger.info("   ✅ Created derived features")
+        logger.info("    Created derived features")
         return df
     
     def handle_missing_values(self, df, fit=True):
@@ -72,13 +72,13 @@ class FeatureEngineer:
             if col in self.numerical_fill_values:
                 df[col] = df[col].fillna(self.numerical_fill_values[col])
         
-        logger.info(f"   ✅ Handled missing values in {len(numerical_cols)} numerical columns")
+        logger.info(f"    Handled missing values in {len(numerical_cols)} numerical columns")
         
         return df
     
     def encode_categorical_features(self, df, fit=True):
         """Encode categorical variables and drop originals"""
-        logger.info("🏷️ Encoding categorical features...")
+        logger.info(" Encoding categorical features...")
         
         df = df.copy()
         
@@ -110,12 +110,12 @@ class FeatureEngineer:
         # DROP ORIGINAL CATEGORICAL COLUMNS
         df = df.drop(columns=categorical_cols)
         
-        logger.info(f"   ✅ Encoded {len(categorical_cols)} categorical features")
+        logger.info(f"    Encoded {len(categorical_cols)} categorical features")
         return df
     
     def scale_numerical_features(self, df, fit=True):
         """Scale numerical features"""
-        logger.info("📏 Scaling numerical features...")
+        logger.info(" Scaling numerical features...")
         
         df = df.copy()
         
@@ -139,7 +139,7 @@ class FeatureEngineer:
                 if self.scaler:
                     df[numerical_cols] = self.scaler.transform(df[numerical_cols])
             
-            logger.info(f"   ✅ Scaled {len(numerical_cols)} numerical features")
+            logger.info(f"    Scaled {len(numerical_cols)} numerical features")
         
         return df
     
@@ -153,7 +153,7 @@ class FeatureEngineer:
         nan_cols = df.columns[df.isna().any()].tolist()
         
         if nan_cols:
-            logger.warning(f"   ⚠️ Found NaN values in {len(nan_cols)} columns: {nan_cols}")
+            logger.warning(f"    Found NaN values in {len(nan_cols)} columns: {nan_cols}")
             
             for col in nan_cols:
                 nan_count = df[col].isna().sum()
@@ -172,7 +172,7 @@ class FeatureEngineer:
                     df[col] = df[col].fillna(0)
                     logger.warning(f"      Filled with 0")
         else:
-            logger.info("   ✅ No NaN values found")
+            logger.info("    No NaN values found")
         
         return df
     
@@ -187,7 +187,7 @@ class FeatureEngineer:
         Returns:
             pd.DataFrame: Engineered features
         """
-        logger.info("⚙️ Starting feature engineering pipeline...")
+        logger.info(" Starting feature engineering pipeline...")
         
         # Log initial state
         initial_nan = df.isna().sum().sum()
@@ -215,14 +215,14 @@ class FeatureEngineer:
         # Final verification
         final_nan = df.isna().sum().sum()
         if final_nan > 0:
-            logger.error(f"   ❌ WARNING: {final_nan} NaN values remain after feature engineering!")
+            logger.error(f"    WARNING: {final_nan} NaN values remain after feature engineering!")
             # Log which columns still have NaN
             nan_summary = df.isna().sum()
             nan_summary = nan_summary[nan_summary > 0]
             logger.error(f"   Columns with NaN: {nan_summary.to_dict()}")
         else:
-            logger.info(f"   ✅ All NaN values handled successfully")
+            logger.info(f"    All NaN values handled successfully")
         
-        logger.info(f"✅ Feature engineering complete: {len(self.feature_names)} features")
+        logger.info(f" Feature engineering complete: {len(self.feature_names)} features")
         
         return df

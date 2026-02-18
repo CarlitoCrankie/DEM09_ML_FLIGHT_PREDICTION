@@ -93,7 +93,7 @@ class IncrementalDataLoader:
         """
         
         df = self.mysql_hook.get_pandas_df(query)
-        logger.info(f"📥 Loaded {len(df):,} valid records from MySQL staging")
+        logger.info(f" Loaded {len(df):,} valid records from MySQL staging")
         
         return df
     
@@ -117,10 +117,10 @@ class IncrementalDataLoader:
         
         try:
             df = self.postgres_hook.get_pandas_df(query)
-            logger.info(f"📊 Loaded {len(df):,} existing active records from PostgreSQL")
+            logger.info(f" Loaded {len(df):,} existing active records from PostgreSQL")
             return df
         except Exception as e:
-            logger.warning(f"⚠️ No existing data found or error occurred: {e}")
+            logger.warning(f" No existing data found or error occurred: {e}")
             return pd.DataFrame()
     
     def detect_changes(self, new_df: pd.DataFrame) -> Dict:
@@ -144,7 +144,7 @@ class IncrementalDataLoader:
             - unchanged_records: DataFrame of records that haven't changed
             - change_percentage: Percentage of data that changed
         """
-        logger.info("🔍 Starting change detection process...")
+        logger.info(" Starting change detection process...")
         start_time = datetime.now()
         
         # Calculate hashes for new data
@@ -156,7 +156,7 @@ class IncrementalDataLoader:
         
         # Handle first load scenario
         if existing_df.empty:
-            logger.info("📊 No existing data found. All records are NEW.")
+            logger.info(" No existing data found. All records are NEW.")
             return {
                 'new_records': new_df,
                 'deleted_records': pd.DataFrame(),
@@ -193,13 +193,13 @@ class IncrementalDataLoader:
         
         # Log summary
         logger.info("=" * 70)
-        logger.info("📊 CHANGE DETECTION SUMMARY")
+        logger.info(" CHANGE DETECTION SUMMARY")
         logger.info("=" * 70)
-        logger.info(f"   ✨ New records:       {len(new_records):,}")
-        logger.info(f"   🗑️  Deleted records:   {len(deleted_records):,}")
-        logger.info(f"   ✓  Unchanged records: {len(unchanged_records):,}")
-        logger.info(f"   📈 Change percentage: {change_percentage:.2f}%")
-        logger.info(f"   ⏱️  Detection time:    {detection_time:.2f}s")
+        logger.info(f"    New records:       {len(new_records):,}")
+        logger.info(f"     Deleted records:   {len(deleted_records):,}")
+        logger.info(f"     Unchanged records: {len(unchanged_records):,}")
+        logger.info(f"    Change percentage: {change_percentage:.2f}%")
+        logger.info(f"   ⏱  Detection time:    {detection_time:.2f}s")
         logger.info("=" * 70)
         
         return {
@@ -242,7 +242,7 @@ class IncrementalDataLoader:
             changes: Output from detect_changes()
             load_type: 'INCREMENTAL' or 'FULL'
         """
-        logger.info(f"🔄 Applying {load_type} load...")
+        logger.info(f" Applying {load_type} load...")
         start_time = datetime.now()
         
         conn = self.postgres_hook.get_conn()
@@ -256,7 +256,7 @@ class IncrementalDataLoader:
             # Step 1: Insert new records
             # ====================================
             if not changes['new_records'].empty:
-                logger.info(f"➕ Inserting {len(changes['new_records']):,} new records...")
+                logger.info(f" Inserting {len(changes['new_records']):,} new records...")
                 
                 # Add tracking columns
                 new_data = changes['new_records'].copy()
@@ -302,15 +302,15 @@ class IncrementalDataLoader:
                     
                     cursor.execute(insert_sql, values)
                     total_inserted += len(chunk)
-                    logger.info(f"   ✅ Inserted chunk ({total_inserted:,} / {len(new_data):,})")
+                    logger.info(f"    Inserted chunk ({total_inserted:,} / {len(new_data):,})")
                 
-                logger.info(f"   ✅ Inserted {len(changes['new_records']):,} new records")
+                logger.info(f"    Inserted {len(changes['new_records']):,} new records")
             
             # ====================================
             # Step 2: Soft delete removed records
             # ====================================
             if not changes['deleted_records'].empty:
-                logger.info(f"🗑️  Marking {len(changes['deleted_records']):,} records as inactive...")
+                logger.info(f"  Marking {len(changes['deleted_records']):,} records as inactive...")
                 
                 deleted_hashes = changes['deleted_records']['record_hash'].tolist()
                 
@@ -326,7 +326,7 @@ class IncrementalDataLoader:
                 
                 cursor.execute(update_query, [datetime.now()] + deleted_hashes)
                 
-                logger.info(f"   ✅ Marked {len(changes['deleted_records']):,} records as inactive")
+                logger.info(f"    Marked {len(changes['deleted_records']):,} records as inactive")
             
             # ====================================
             # Step 3: Log metadata
@@ -349,19 +349,19 @@ class IncrementalDataLoader:
                     execution_time
                 ))
             except Exception as e:
-                logger.warning(f"⚠️ Could not log metadata: {e}")
+                logger.warning(f" Could not log metadata: {e}")
             
             # Commit transaction
             conn.commit()
             
             logger.info("=" * 70)
-            logger.info(f"✅ {load_type} LOAD COMPLETED SUCCESSFULLY")
-            logger.info(f"   ⏱️  Execution time: {execution_time}s")
+            logger.info(f" {load_type} LOAD COMPLETED SUCCESSFULLY")
+            logger.info(f"     Execution time: {execution_time}s")
             logger.info("=" * 70)
             
         except Exception as e:
             conn.rollback()
-            logger.error(f"❌ {load_type} load failed: {e}")
+            logger.error(f" {load_type} load failed: {e}")
             raise
         finally:
             cursor.close()
@@ -376,7 +376,7 @@ class IncrementalDataLoader:
         Args:
             df: Complete dataset to load
         """
-        logger.info("🔄 Applying FULL load (truncate and reload)...")
+        logger.info(" Applying FULL load (truncate and reload)...")
         start_time = datetime.now()
         
         conn = self.postgres_hook.get_conn()
@@ -389,7 +389,7 @@ class IncrementalDataLoader:
             # ====================================
             # Step 1: Truncate table
             # ====================================
-            logger.info("🗑️  Truncating bronze.validated_flights...")
+            logger.info("  Truncating bronze.validated_flights...")
             cursor.execute("TRUNCATE TABLE bronze.validated_flights RESTART IDENTITY")
             
             # ====================================
@@ -409,7 +409,7 @@ class IncrementalDataLoader:
             # ====================================
             # Step 3: Insert all data
             # ====================================
-            logger.info(f"➕ Inserting {len(df_copy):,} records...")
+            logger.info(f"Inserting {len(df_copy):,} records...")
             
             # Define column order
             columns_list = [
@@ -448,9 +448,9 @@ class IncrementalDataLoader:
                     cursor.execute(insert_sql, values)
                     total_inserted += len(chunk)
                     if total_inserted % 5000 == 0 or total_inserted == len(df_copy):
-                        logger.info(f"  ✅ Inserted {total_inserted:,} / {len(df_copy):,} records")
+                        logger.info(f"  Inserted {total_inserted:,} / {len(df_copy):,} records")
                 except Exception as e:
-                    logger.error(f"  ❌ Error inserting chunk at offset {i}: {e}")
+                    logger.error(f"   Error inserting chunk at offset {i}: {e}")
                     raise
             
             # ====================================
@@ -465,20 +465,20 @@ class IncrementalDataLoader:
                     VALUES (%s, %s, %s, %s)
                 """, (len(df_copy), 'FULL', 100.0, execution_time))
             except Exception as e:
-                logger.warning(f"⚠️ Could not log metadata: {e}")
+                logger.warning(f" Could not log metadata: {e}")
             
             # Commit transaction
             conn.commit()
             
             logger.info("=" * 70)
-            logger.info("✅ FULL LOAD COMPLETED SUCCESSFULLY")
-            logger.info(f"   📊 Records loaded: {len(df_copy):,}")
-            logger.info(f"   ⏱️  Execution time: {execution_time}s")
+            logger.info(" FULL LOAD COMPLETED SUCCESSFULLY")
+            logger.info(f"    Records loaded: {len(df_copy):,}")
+            logger.info(f"     Execution time: {execution_time}s")
             logger.info("=" * 70)
             
         except Exception as e:
             conn.rollback()
-            logger.error(f"❌ FULL load failed: {e}")
+            logger.error(f" FULL load failed: {e}")
             raise
         finally:
             cursor.close()

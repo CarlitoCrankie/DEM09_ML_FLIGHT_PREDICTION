@@ -15,7 +15,7 @@ class ModelLogger:
     
     def log_training_event(self, metadata):
         """Log model training to database"""
-        logger.info("📝 Logging training event to database...")
+        logger.info(" Logging training event to database...")
         
         try:
             insert_query = """
@@ -48,10 +48,10 @@ class ModelLogger:
                 autocommit=True
             )
             
-            logger.info("✅ Training event logged successfully")
+            logger.info(" Training event logged successfully")
             
         except Exception as e:
-            logger.error(f"❌ Failed to log training event: {e}")
+            logger.error(f" Failed to log training event: {e}")
     
     def get_latest_model_info(self):
         """Get latest production model info"""

@@ -18,7 +18,7 @@ class SmartFeatureSelector:
     
     def calculate_feature_importance(self, X, y, method='random_forest'):
         """Calculate feature importance"""
-        logger.info(f"🔍 Calculating feature importance using {method}...")
+        logger.info(f" Calculating feature importance using {method}...")
         
         if method == 'random_forest':
             rf = RandomForestRegressor(
@@ -42,7 +42,7 @@ class SmartFeatureSelector:
     
     def select_top_features(self, X, y, top_k=50):
         """Select top K features"""
-        logger.info(f"🎯 Selecting top {top_k} features...")
+        logger.info(f" Selecting top {top_k} features...")
         
         rf_importance = self.calculate_feature_importance(X, y, 'random_forest')
         mi_importance = self.calculate_feature_importance(X, y, 'mutual_info')
@@ -60,7 +60,7 @@ class SmartFeatureSelector:
         self.selected_features = combined.head(top_k)['feature'].tolist()
         self.feature_importance_scores = combined.set_index('feature')['avg_rank'].to_dict()
         
-        logger.info(f"✅ Selected {len(self.selected_features)} features")
+        logger.info(f" Selected {len(self.selected_features)} features")
         logger.info(f"   Top 10: {self.selected_features[:10]}")
         
         return self.selected_features

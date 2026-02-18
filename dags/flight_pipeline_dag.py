@@ -498,9 +498,9 @@ def send_completion_email(**context):
             subject=subject,
             html_content=html_content
         )
-        logger.info(f"✅ Completion email sent to {default_args['email']}")
+        logger.info(f" Completion email sent to {default_args['email']}")
     except Exception as e:
-        logger.warning(f"⚠️ Failed to send completion email: {e}")
+        logger.warning(f" Failed to send completion email: {e}")
 
 
 # ============================================
@@ -1093,7 +1093,7 @@ def transfer_to_postgres_incremental(**context) -> dict:
     
     try:
         logger.info("=" * 70)
-        logger.info("🚀 STARTING INCREMENTAL DATA TRANSFER")
+        logger.info(" STARTING INCREMENTAL DATA TRANSFER")
         logger.info("=" * 70)
         
         loader = IncrementalDataLoader(
@@ -1104,7 +1104,7 @@ def transfer_to_postgres_incremental(**context) -> dict:
         df_new = loader.load_new_data_from_mysql()
         
         if df_new.empty:
-            logger.warning("⚠️ No valid data to transfer")
+            logger.warning(" No valid data to transfer")
             log_pipeline_event(
                 dag_id=dag_id,
                 dag_run_id=dag_run_id,
@@ -1128,7 +1128,7 @@ def transfer_to_postgres_incremental(**context) -> dict:
         
         if change_percentage > FULL_LOAD_THRESHOLD:
             logger.info("=" * 70)
-            logger.info(f"⚠️  CHANGE RATE: {change_percentage:.1f}% (>{FULL_LOAD_THRESHOLD}%)")
+            logger.info(f"  CHANGE RATE: {change_percentage:.1f}% (>{FULL_LOAD_THRESHOLD}%)")
             logger.info("   → Performing FULL LOAD (truncate and reload)")
             logger.info("=" * 70)
             
@@ -1138,7 +1138,7 @@ def transfer_to_postgres_incremental(**context) -> dict:
             
         else:
             logger.info("=" * 70)
-            logger.info(f"✅ CHANGE RATE: {change_percentage:.1f}% (<={FULL_LOAD_THRESHOLD}%)")
+            logger.info(f" CHANGE RATE: {change_percentage:.1f}% (<={FULL_LOAD_THRESHOLD}%)")
             logger.info("   → Performing INCREMENTAL LOAD")
             logger.info("=" * 70)
             
@@ -1151,13 +1151,13 @@ def transfer_to_postgres_incremental(**context) -> dict:
         result = postgres_hook.get_first(verify_query)
         active_count = result[0]
         
-        logger.info(f"✅ Verified: {active_count:,} active records in PostgreSQL")
+        logger.info(f" Verified: {active_count:,} active records in PostgreSQL")
         
         stats = loader.get_load_statistics(days=7)
         
         if not stats.empty:
             logger.info("\n" + "=" * 70)
-            logger.info("📊 RECENT LOAD STATISTICS (Last 7 Days)")
+            logger.info(" RECENT LOAD STATISTICS (Last 7 Days)")
             logger.info("=" * 70)
             logger.info("\n" + stats.to_string(index=False))
             logger.info("=" * 70)
@@ -1187,7 +1187,7 @@ def transfer_to_postgres_incremental(**context) -> dict:
         )
         
         logger.info("\n" + "=" * 70)
-        logger.info(f"✅ DATA TRANSFER COMPLETED USING {load_type} LOAD")
+        logger.info(f" DATA TRANSFER COMPLETED USING {load_type} LOAD")
         logger.info("=" * 70)
         
         return {
@@ -1523,7 +1523,7 @@ def skip_processing(**context):
     
     dag_id, dag_run_id, task_id = get_task_context(context)
     
-    logger.info("⏭️ Processing skipped - no significant data changes")
+    logger.info("⏭ Processing skipped - no significant data changes")
     logger.info("   DBT transformations: SKIPPED")
     logger.info("   ML retraining: SKIPPED")
     

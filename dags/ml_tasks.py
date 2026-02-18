@@ -33,7 +33,7 @@ def decide_model_retraining(**context) -> str:
     dag_id, dag_run_id, task_id = get_task_context(context)
     
     try:
-        logger.info("🤔 Deciding whether to retrain model...")
+        logger.info(" Deciding whether to retrain model...")
         
         ti = context['ti']
         load_type = ti.xcom_pull(task_ids='transfer_to_postgres_incremental', key='load_type')
@@ -112,41 +112,41 @@ def retrain_ml_model(**context) -> dict:
         # ====================================
         # Step 1: Load data
         # ====================================
-        logger.info("📥 Loading training data...")
+        logger.info(" Loading training data...")
         data_loader = MLDataLoader(postgres_conn_id='postgres_analytics')
         df_raw = data_loader.get_training_data(enrich_with_gold=False)
-        logger.info(f"   ✅ Loaded {len(df_raw):,} records")
+        logger.info(f"    Loaded {len(df_raw):,} records")
         logger.info(f"   Columns: {list(df_raw.columns)}")
         
         # Check for NaN in raw data
         nan_summary = df_raw.isna().sum()
         nan_cols = nan_summary[nan_summary > 0]
         if not nan_cols.empty:
-            logger.warning(f"   ⚠️ NaN values in raw data:")
+            logger.warning(f"    NaN values in raw data:")
             for col, count in nan_cols.items():
                 logger.warning(f"      {col}: {count} ({count/len(df_raw)*100:.1f}%)")
         
         # ====================================
         # Step 2: Feature engineering
         # ====================================
-        logger.info("⚙️ Feature engineering...")
+        logger.info(" Feature engineering...")
         feature_engineer = FeatureEngineer()
         df_features = feature_engineer.engineer_features(df_raw, fit=True)
         
         # Verify no NaN after feature engineering
         nan_check = df_features.isna().sum().sum()
         if nan_check > 0:
-            logger.error(f"   ❌ {nan_check} NaN values remain after feature engineering!")
+            logger.error(f"    {nan_check} NaN values remain after feature engineering!")
             nan_cols = df_features.columns[df_features.isna().any()].tolist()
             logger.error(f"   Problematic columns: {nan_cols}")
             raise ValueError(f"NaN values detected after feature engineering in columns: {nan_cols}")
         
-        logger.info(f"   ✅ Feature engineering complete: {df_features.shape}")
+        logger.info(f"    Feature engineering complete: {df_features.shape}")
         
         # ====================================
         # Step 3: Prepare X and y
         # ====================================
-        logger.info("🎯 Preparing features and target...")
+        logger.info(" Preparing features and target...")
         
         # Separate features and target
         target_col = 'total_fare_bdt'
@@ -173,19 +173,19 @@ def retrain_ml_model(**context) -> dict:
         non_numeric_cols = [col for col in X.columns if col not in numeric_cols]
         
         if non_numeric_cols:
-            logger.warning(f"   ⚠️ Dropping {len(non_numeric_cols)} non-numeric columns:")
+            logger.warning(f"    Dropping {len(non_numeric_cols)} non-numeric columns:")
             for col in non_numeric_cols[:10]:  # Show first 10
                 logger.warning(f"      - {col} (dtype: {X[col].dtype})")
             if len(non_numeric_cols) > 10:
                 logger.warning(f"      ... and {len(non_numeric_cols) - 10} more")
             X = X[numeric_cols]
         
-        logger.info(f"   ✅ All features numeric: {X.shape}")
+        logger.info(f"    All features numeric: {X.shape}")
         
         # Final NaN check in X
         x_nan_check = X.isna().sum().sum()
         if x_nan_check > 0:
-            logger.error(f"   ❌ {x_nan_check} NaN values found in feature matrix!")
+            logger.error(f"    {x_nan_check} NaN values found in feature matrix!")
             nan_cols_x = X.columns[X.isna().any()].tolist()
             logger.error(f"   Columns with NaN: {nan_cols_x}")
             
@@ -197,15 +197,15 @@ def retrain_ml_model(**context) -> dict:
             final_nan = X.isna().sum().sum()
             if final_nan > 0:
                 raise ValueError(f"Could not eliminate NaN values. {final_nan} remain.")
-            logger.warning("   ✅ Emergency fill successful")
+            logger.warning("   Emergency fill successful")
         
         # Check target for NaN
         y_nan_check = y.isna().sum()
         if y_nan_check > 0:
-            logger.error(f"   ❌ {y_nan_check} NaN values in target variable!")
+            logger.error(f"   {y_nan_check} NaN values in target variable!")
             raise ValueError("Target variable contains NaN values")
         
-        logger.info(f"   ✅ Data validation complete")
+        logger.info(f"    Data validation complete")
         logger.info(f"      X: {X.shape[0]} samples, {X.shape[1]} features")
         logger.info(f"      y: {len(y)} values")
         logger.info(f"      X NaN count: {X.isna().sum().sum()}")
@@ -222,12 +222,12 @@ def retrain_ml_model(**context) -> dict:
         selected_features = feature_selector.select_top_features(X, y, top_k=n_features)
         
         X_selected = X[selected_features]
-        logger.info(f"   ✅ Selected {len(selected_features)} features")
+        logger.info(f"    Selected {len(selected_features)} features")
         
         # ====================================
         # Step 6: Train-test split
         # ====================================
-        logger.info("📊 Splitting data...")
+        logger.info(" Splitting data...")
         X_train, X_test, y_train, y_test = train_test_split(
             X_selected, y, test_size=0.2, random_state=42
         )
@@ -237,7 +237,7 @@ def retrain_ml_model(**context) -> dict:
         # ====================================
         # Step 7: Train models
         # ====================================
-        logger.info("🎯 Training models...")
+        logger.info(" Training models...")
         trainer = ModelTrainer()
         result = trainer.train_all(X_train, y_train, X_test, y_test)
 
@@ -248,11 +248,11 @@ def retrain_ml_model(**context) -> dict:
         }
 
         # Log all model results
-        logger.info("📊 All model results:")
+        logger.info(" All model results:")
         for model_name, metrics in result['all_results'].items():
             logger.info(f"   {model_name}: R²={metrics['test_r2']:.4f}, MAE={metrics['test_mae']:,.2f}")
 
-        logger.info(f"   ✅ Best model: {best_model_info['name']}")
+        logger.info(f"    Best model: {best_model_info['name']}")
         logger.info(f"      R²:   {best_model_info['metrics']['test_r2']:.4f}")
         logger.info(f"      MAE:  {best_model_info['metrics']['test_mae']:.2f}")
         logger.info(f"      RMSE: {best_model_info['metrics']['test_rmse']:.2f}")
@@ -264,14 +264,14 @@ def retrain_ml_model(**context) -> dict:
         # Log all metrics
         evaluator = ModelEvaluator()
         result = evaluator.evaluate_model(best_model_info['model'], X_test, y_test, best_model_info['name'])
-        logger.info("📈 Model evaluation metrics:")
+        logger.info(" Model evaluation metrics:")
         for metric_name, metric_value in result.items():
             logger.info(f"   {metric_name}: {metric_value:.4f}")
         
         # ====================================
         # Step 9: Save model
         # ====================================
-        logger.info("💾 Saving model artifacts...")
+        logger.info(" Saving model artifacts...")
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         
         # Save to latest
@@ -306,12 +306,12 @@ def retrain_ml_model(**context) -> dict:
         # ====================================
         # Step 10: Log to database
         # ====================================
-        logger.info("📝 Logging to database...")
+        logger.info(" Logging to database...")
         model_logger = ModelLogger(postgres_conn_id='postgres_analytics')
         model_logger.log_training_event(metadata)
         
         logger.info("=" * 70)
-        logger.info("✅ MODEL RETRAINING COMPLETED SUCCESSFULLY")
+        logger.info(" MODEL RETRAINING COMPLETED SUCCESSFULLY")
         logger.info(f"   Model: {best_model_info['name']}")        
         logger.info(f"      R²: {best_model_info['metrics']['test_r2']:.4f}")
         logger.info(f"      MAE: {best_model_info['metrics']['test_mae']:.2f}")
@@ -337,7 +337,7 @@ def retrain_ml_model(**context) -> dict:
         }
         
     except Exception as e:
-        logger.exception(f"❌ Model retraining failed: {e}")
+        logger.exception(f" Model retraining failed: {e}")
         log_pipeline_event(dag_id, dag_run_id, task_id, 'failed', {'error': str(e)})
         raise
 
@@ -350,7 +350,7 @@ def skip_retraining(**context):
     logger = logging.getLogger(__name__)
     dag_id, dag_run_id, task_id = get_task_context(context)
     
-    logger.info("⏭️ Model retraining skipped")
+    logger.info("⏭ Model retraining skipped")
     log_pipeline_event(dag_id, dag_run_id, task_id, 'completed', {'retrained': False})
     
     return {'retrained': False}
@@ -367,5 +367,5 @@ def retraining_complete(**context):
     ti = context['ti']
     decision = ti.xcom_pull(task_ids='decide_model_retraining')
     
-    logger.info(f"🎯 Retraining branch completed (decision: {decision})")
+    logger.info(f" Retraining branch completed (decision: {decision})")
     log_pipeline_event(dag_id, dag_run_id, task_id, 'completed')
