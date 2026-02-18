@@ -18,35 +18,7 @@ Complete ML system combining **enterprise ETL**, **automated model training**, a
 
 ## Architecture
 
-```
-┌─────────────────── DATA PIPELINE ────────────────────┐
-│ Kaggle → MySQL → PostgreSQL (Bronze/Silver/Gold)     │
-│         ↓                                            │
-│   Incremental Loading (MD5 hashing)                  │
-└──────────────────────┬───────────────────────────────┘
-                       ↓
-┌─────────────────── ML PIPELINE ──────────────────────┐
-│                                                       │
-│  Data Changes? ──→ Retrain Decision                  │
-│       ↓                    ↓                          │
-│  [Skip] ←─────────────→ [Train]                      │
-│                            ↓                          │
-│         5 models compete (incl. Gradient Boosting)   │
-│                            ↓                          │
-│              ./models/latest/                         │
-│              ├─ model.pkl                             │
-│              ├─ feature_engineer.pkl                  │
-│              └─ metadata.json                         │
-└───────────────────────┬───────────────────────────────┘
-                        ↓
-┌─────────────────── SERVING LAYER ────────────────────┐
-│                                                       │
-│  FastAPI (Port 8000)  ←──→  Streamlit UI (8501)     │
-│       ↓                              ↓                │
-│  Model Inference              User Interface          │
-│  (<100ms response)            (Interactive form)      │
-└───────────────────────────────────────────────────────┘
-```
+![System_architecture](./docs/diagrams/System_architecture.png)
 
 ---
 
